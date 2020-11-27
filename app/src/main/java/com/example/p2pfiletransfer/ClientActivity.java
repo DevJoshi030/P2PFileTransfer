@@ -88,6 +88,8 @@ public class ClientActivity extends Activity {
 		setClientFileTransferStatus("Client is currently idle");
 
 		//setTargetFileStatus("testing");
+		searchForPeers();
+
 	}
 
 	@Override
@@ -129,7 +131,7 @@ public class ClientActivity extends Activity {
 		}
 	}
 
-	public void searchForPeers(View view) {
+	public void searchForPeers() {
 
 		//Discover peers, no call back method given
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -273,6 +275,7 @@ public class ClientActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
+		searchForPeers();
 	}
 
 	@Override

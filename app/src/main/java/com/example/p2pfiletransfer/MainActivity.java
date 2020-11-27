@@ -1,8 +1,12 @@
 package com.example.p2pfiletransfer;
 
 import java.io.File;
+import java.util.Random;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.pm.PackageManager;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
@@ -21,12 +25,16 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 public class MainActivity extends Activity {
 	private static final int REQUEST_WRITE_STORAGE_REQUEST_CODE = 10;
+	private static final String CHANNEL_ID = "1";
 	public final int fileRequestID = 55;
 	public final int port = 7950;
+	public Context context;
 
 
 	private WifiP2pManager wifiManager;
@@ -49,6 +57,7 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		requestAppPermissions();
 		//Block auto opening keyboard
+		context = this;
 		this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
 		wifiManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
@@ -116,7 +125,9 @@ public class MainActivity extends Activity {
 				setServerFileTransferStatus("Peers searching Failed");
 			}
 		});
-        
+//		startServer();
+		createNotificationChannel();
+
     }
 
     @Override
@@ -148,7 +159,7 @@ public class MainActivity extends Activity {
 	    	    	TextView filePath = (TextView) findViewById(R.id.server_file_path);
 	    	    	filePath.setText(targetDir.getPath());
 	    			setServerFileTransferStatus("Download directory set to " + targetDir.getName());
-	    			
+	    			startServer();
     			}
     			else
     			{
@@ -164,7 +175,7 @@ public class MainActivity extends Activity {
         }
     }
     
-    public void startServer(View view) {
+    public void startServer() {
     	
     	//If server is already listening on port or transfering data, do not attempt to start server service 
     	if(!serverThreadActive)
@@ -200,8 +211,23 @@ public class MainActivity extends Activity {
 
 		    	        	server_file_status_text.post(new Runnable() {
 		    	                public void run() {
-		    	                	server_file_status_text.setText((String)resultData.get("message"));
-		    	                }
+									server_file_status_text.setText((String) resultData.get("message"));
+									if (!((String) resultData.get("message")).equalsIgnoreCase("About to start handshake")) {
+										NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+												.setSmallIcon(R.drawable.icon)
+												.setContentTitle("File transfer Status")
+												.setStyle(new NotificationCompat.BigTextStyle()
+														.bigText((String) resultData.get("message")))
+												.setPriority(NotificationCompat.PRIORITY_DEFAULT)
+												.setAutoCancel(true);
+										NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+
+										// notificationId is a unique int for each notification that you must define
+										Random rm = new Random();
+										int notificationId = rm.nextInt();
+										notificationManager.notify(notificationId, builder.build());
+									}
+								}
 		    	        	});		    	   		    	        	
 		    	        }
 	    	    	}
@@ -321,6 +347,21 @@ public class MainActivity extends Activity {
 	private boolean hasWritePermissions() {
 		return (ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
 	}
-    
+
+	private void createNotificationChannel() {
+		// Create the NotificationChannel, but only on API 26+ because
+		// the NotificationChannel class is new and not in the support library
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			CharSequence name = getString(R.string.channel_name);
+			String description = getString(R.string.channel_description);
+			int importance = NotificationManager.IMPORTANCE_DEFAULT;
+			NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+			channel.setDescription(description);
+			// Register the channel with the system; you can't change the importance
+			// or other notification behaviors after this
+			NotificationManager notificationManager = getSystemService(NotificationManager.class);
+			notificationManager.createNotificationChannel(channel);
+		}
+	}
          
 }

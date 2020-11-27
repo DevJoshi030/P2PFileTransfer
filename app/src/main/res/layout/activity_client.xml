@@ -30,14 +30,6 @@
             android:onClick="browseForFile"
             android:text="@string/browse_path_button" />
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:onClick="searchForPeers"
-            android:text="@string/client_search" />
-        
-            
 
         <Button
             android:layout_width="wrap_content"
