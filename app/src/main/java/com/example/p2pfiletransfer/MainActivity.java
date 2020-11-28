@@ -8,6 +8,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.pm.PackageManager;
+import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.os.Build;
@@ -126,6 +127,9 @@ public class MainActivity extends Activity {
 			}
 		});
 //		startServer();
+		WifiManager wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+		wifi.setWifiEnabled(false);
+		wifi.setWifiEnabled(true);
 		createNotificationChannel();
 
     }
